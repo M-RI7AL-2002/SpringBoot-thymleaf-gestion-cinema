@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-chart-bar"></i> Statistiques</h1>
+                <p class="subtitle">Analyse des performances et données du cinéma</p>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <!-- Taux de remplissage par séance -->
+                <div class="form-container">
+                    <h3><i class="fas fa-percentage"></i> Taux de Remplissage par Séance</h3>
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="tauxRemplissageChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recettes par film -->
+                <div class="form-container">
+                    <h3><i class="fas fa-euro-sign"></i> Recettes par Film</h3>
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="recettesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Statistics Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#lists.size(tauxRemplissage)}">0</div>
+                    <div class="stat-label">Séances Analysées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#lists.size(recettesParFilm)}">0</div>
+                    <div class="stat-label">Films avec Recettes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#lists.isEmpty(recettesParFilm) ? '0' : #numbers.formatDecimal(#aggregates.sum(recettesParFilm.values()), 1, 2)}">0</div>
+                    <div class="stat-label">Recettes Total (€)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-value" th:text="${#lists.isEmpty(tauxRemplissage) ? '0' : #numbers.formatDecimal(#aggregates.avg(tauxRemplissage.values()), 1, 1)}">0</div>
+                    <div class="stat-label">Taux Moyen (%)</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-buttons">
+                <a th:href="@{/dashboard}" class="btn-cinema btn-cinema-info">
+                    <i class="fas fa-tachometer-alt"></i> Retour au Tableau de Bord
+                </a>
+                <a th:href="@{/film/all}" class="btn-cinema btn-cinema-primary">
+                    <i class="fas fa-film"></i> Gérer les Films
+                </a>
+                <a th:href="@{/seance/all}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-calendar-alt"></i> Gérer les Séances
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js Scripts -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var tauxRemplissageData = /*[[${tauxRemplissage}]]*/ {};
+        var recettesData = /*[[${recettesParFilm}]]*/ {};
+
+        // Taux de remplissage Chart
+        const tauxCtx = document.getElementById('tauxRemplissageChart').getContext('2d');
+        new Chart(tauxCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(tauxRemplissageData),
+                datasets: [{
+                    label: 'Taux de Remplissage (%)',
+                    data: Object.values(tauxRemplissageData),
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(155, 89, 182, 0.8)',
+                        'rgba(26, 188, 156, 0.8)',
+                        'rgba(52, 73, 94, 0.8)',
+                        'rgba(230, 126, 34, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(231, 76, 60, 1)',
+                        'rgba(243, 156, 18, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(26, 188, 156, 1)',
+                        'rgba(52, 73, 94, 1)',
+                        'rgba(230, 126, 34, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Taux de remplissage des séances',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // Recettes par Film Chart
+        const recettesCtx = document.getElementById('recettesChart').getContext('2d');
+        new Chart(recettesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(recettesData),
+                datasets: [{
+                    label: 'Recettes (€)',
+                    data: Object.values(recettesData),
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(155, 89, 182, 0.8)',
+                        'rgba(26, 188, 156, 0.8)',
+                        'rgba(52, 73, 94, 0.8)',
+                        'rgba(230, 126, 34, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(231, 76, 60, 1)',
+                        'rgba(243, 156, 18, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(26, 188, 156, 1)',
+                        'rgba(52, 73, 94, 1)',
+                        'rgba(230, 126, 34, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Répartition des recettes par film',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return label + ': ' + value.toFixed(2) + '€ (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

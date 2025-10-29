@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails de la Séance - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-eye"></i> Détails de la Séance</h1>
+                <p class="subtitle">Informations complètes de la séance</p>
+            </div>
+
+        <!-- Séance Details -->
+        <div class="form-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-calendar-alt"></i> Séance #<span th:text="${seance.id}">1</span></h3>
+                <div class="action-buttons">
+                    <a th:href="@{/seance/edit/{id}(id=${seance.id})}" class="btn-cinema btn-cinema-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a th:href="@{/seance/all}" class="btn-cinema btn-cinema-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Séance Information -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-info-circle"></i> Informations de la Séance</h4>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-hashtag"></i> ID :</strong>
+                        <span th:text="${seance.id}">1</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-calendar"></i> Date et Heure :</strong>
+                        <div>
+                            <span style="font-size: 1.1rem; font-weight: bold;" 
+                                  th:text="${#temporals.format(seance.dateHeure, 'dd/MM/yyyy')}">01/01/2024</span><br>
+                            <span style="color: var(--gray-600);" 
+                                  th:text="${#temporals.format(seance.dateHeure, 'HH:mm')}">20:00</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-door-open"></i> Salle :</strong>
+                        <span class="status-badge status-badge-info" th:text="${seance.salle}">Salle 1</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-language"></i> Version :</strong>
+                        <span class="status-badge status-badge-secondary" th:text="${seance.version}">VF</span>
+                    </div>
+                </div>
+
+                <!-- Film Information -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-film"></i> Informations du Film</h4>
+                    <div th:if="${seance.film != null}">
+                        <div class="mb-3">
+                            <strong><i class="fas fa-film"></i> Titre :</strong>
+                            <span th:text="${seance.film.titre}">Titre du Film</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="fas fa-tags"></i> Genre :</strong>
+                            <span class="status-badge status-badge-info" th:text="${seance.film.genre}">Genre</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="fas fa-clock"></i> Durée :</strong>
+                            <span th:text="${seance.film.dureeMin} + ' minutes'">120 minutes</span>
+                        </div>
+                    </div>
+                    <div th:if="${seance.film == null}" class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Aucun film associé à cette séance.</p>
+                        <a th:href="@{/film/new}" class="btn-cinema btn-cinema-success">
+                            <i class="fas fa-plus"></i> Ajouter un film
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Billets Information -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-ticket-alt"></i> Billets Vendus</h4>
+                    <div th:if="${seance.billets != null and !#lists.isEmpty(seance.billets)}">
+                        <div class="mb-2">
+                            <strong>Nombre de billets :</strong>
+                            <span class="status-badge status-badge-success" th:text="${#lists.size(seance.billets)}">0</span>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Revenus totaux :</strong>
+                            <span style="font-weight: bold; color: var(--success-color);">
+                                <span th:text="${#aggregates.sum(seance.billets.![prix])}">0.00</span>€
+                            </span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Derniers billets vendus :</strong>
+                        </div>
+                        <div th:each="billet : ${seance.billets}" class="mb-2" style="padding: 0.5rem; background: var(--gray-100); border-radius: 0.25rem;">
+                            <div><strong>Prix :</strong> <span th:text="${billet.prix} + '€'">15.00€</span></div>
+                            <div><strong>Statut :</strong> 
+                                <span class="status-badge" 
+                                      th:classappend="${billet.status == 'Vendu' ? 'status-badge-success' : 
+                                                     billet.status == 'Réservé' ? 'status-badge-warning' : 
+                                                     billet.status == 'Annulé' ? 'status-badge-danger' : 'status-badge-secondary'}"
+                                      th:text="${billet.status}">Vendu</span>
+                            </div>
+                            <div th:if="${billet.dateAchat != null}">
+                                <strong>Date d'achat :</strong> 
+                                <span th:text="${#temporals.format(billet.dateAchat, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${seance.billets == null or #lists.isEmpty(seance.billets)}" class="empty-state">
+                        <i class="fas fa-ticket-alt"></i>
+                        <p>Aucun billet vendu pour cette séance.</p>
+                        <a th:href="@{/billet/new}" class="btn-cinema btn-cinema-success">
+                            <i class="fas fa-plus"></i> Vendre un billet
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-buttons mt-4">
+                <a th:href="@{/seance/edit/{id}(id=${seance.id})}" class="btn-cinema btn-cinema-primary">
+                    <i class="fas fa-edit"></i> Modifier cette Séance
+                </a>
+                <a th:href="@{/billet/new}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-ticket-alt"></i> Vendre un Billet
+                </a>
+                <a th:href="@{/seance/delete/{id}(id=${seance.id})}" class="btn-cinema btn-cinema-danger"
+                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ? Cette action supprimera également tous les billets associés.');">
+                    <i class="fas fa-trash"></i> Supprimer la Séance
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

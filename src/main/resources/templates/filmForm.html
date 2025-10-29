@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${film.id != null ? 'Modifier le Film' : 'Ajouter un Film'}">Film</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1>
+                    <i class="fas fa-film"></i>
+                    <span th:text="${film.id != null ? 'Modifier le Film' : 'Ajouter un Film'}">Film</span>
+                </h1>
+                <!-- Safe subtitle using a variable instead of inline SpEL with apostrophes -->
+                <p class="subtitle" th:text="${subtitle}">Gestion des films</p>
+            </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form th:action="@{/film/save}" th:object="${film}" method="post" class="needs-validation" novalidate>
+            <!-- Hidden ID for update -->
+            <input type="hidden" th:field="*{id}" />
+
+            <div class="form-group">
+                <label for="titre" class="form-label">
+                    <i class="fas fa-film"></i> Titre du Film
+                </label>
+                <input type="text" th:field="*{titre}" class="form-control" id="titre"
+                       placeholder="Entrez le titre du film" required>
+                <div class="invalid-feedback">Veuillez entrer le titre du film.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="genre" class="form-label">
+                    <i class="fas fa-tags"></i> Genre
+                </label>
+                <select id="genre" th:field="*{genre}" class="form-select" required>
+                    <option value="" disabled th:selected="${film.genre == null}">-- Sélectionnez un genre --</option>
+                    <option value="Action">Action</option>
+                    <option value="Comédie">Comédie</option>
+                    <option value="Drame">Drame</option>
+                    <option value="Horreur">Horreur</option>
+                    <option value="Science-Fiction">Science-Fiction</option>
+                    <option value="Thriller">Thriller</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Animation">Animation</option>
+                    <option value="Documentaire">Documentaire</option>
+                    <option value="Fantasy">Fantasy</option>
+                    <option value="Aventure">Aventure</option>
+                    <option value="Mystère">Mystère</option>
+                </select>
+                <div class="invalid-feedback">Veuillez sélectionner un genre.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="dureeMin" class="form-label">
+                    <i class="fas fa-clock"></i> Durée (minutes)
+                </label>
+                <input type="number" th:field="*{dureeMin}" class="form-control" id="dureeMin"
+                       placeholder="Durée en minutes" min="1" max="300" required>
+                <div class="invalid-feedback">Veuillez entrer une durée valide (1-300 minutes).</div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn-cinema btn-cinema-success"
+                        th:text="${film.id != null ? 'Mettre à jour' : 'Enregistrer'}">
+                    Enregistrer
+                </button>
+                <a th:href="@{/film/all}" class="btn-cinema btn-cinema-secondary">
+                    <i class="fas fa-arrow-left"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Bootstrap form validation
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+     })();
+ </script>
+ </div>
+ </div>
+ </body>
+ </html>

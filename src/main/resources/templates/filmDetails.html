@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Film - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-eye"></i> Détails du Film</h1>
+                <p class="subtitle">Informations complètes et gestion du film</p>
+            </div>
+
+        <!-- Film Details -->
+        <div class="form-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-film"></i> <span th:text="${film.titre}">Titre du Film</span></h3>
+                <div class="action-buttons">
+                    <a th:href="@{/film/edit/{id}(id=${film.id})}" class="btn-cinema btn-cinema-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a th:href="@{/film/all}" class="btn-cinema btn-cinema-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Film Information -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-info-circle"></i> Informations Générales</h4>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-hashtag"></i> ID :</strong>
+                        <span th:text="${film.id}">1</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-film"></i> Titre :</strong>
+                        <span th:text="${film.titre}">Titre du Film</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-tags"></i> Genre :</strong>
+                        <span class="status-badge status-badge-info" th:text="${film.genre}">Genre</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-clock"></i> Durée :</strong>
+                        <span th:text="${film.dureeMin} + ' minutes'">120 minutes</span>
+                    </div>
+                </div>
+
+                <!-- Related Sessions -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-calendar-alt"></i> Séances Associées</h4>
+                    <div th:if="${film.seances != null and !#lists.isEmpty(film.seances)}">
+                        <div class="mb-2">
+                            <strong>Nombre de séances :</strong>
+                            <span class="status-badge status-badge-success" th:text="${#lists.size(film.seances)}">0</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Prochaines séances :</strong>
+                        </div>
+                        <div th:each="seance : ${film.seances}" class="mb-2" style="padding: 0.5rem; background: var(--gray-100); border-radius: 0.25rem;">
+                            <div><strong>Salle :</strong> <span th:text="${seance.salle}">Salle 1</span></div>
+                            <div><strong>Date :</strong> <span th:text="${#temporals.format(seance.dateHeure, 'dd/MM/yyyy HH:mm')}">01/01/2024 20:00</span></div>
+                            <div><strong>Version :</strong> <span class="status-badge status-badge-secondary" th:text="${seance.version}">VF</span></div>
+                        </div>
+                    </div>
+                    <div th:if="${film.seances == null or #lists.isEmpty(film.seances)}" class="empty-state">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Aucune séance programmée pour ce film.</p>
+                        <a th:href="@{/seance/new}" class="btn-cinema btn-cinema-success">
+                            <i class="fas fa-plus"></i> Programmer une séance
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-buttons mt-4">
+                <a th:href="@{/film/edit/{id}(id=${film.id})}" class="btn-cinema btn-cinema-primary">
+                    <i class="fas fa-edit"></i> Modifier ce Film
+                </a>
+                <a th:href="@{/seance/new}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-calendar-plus"></i> Programmer une Séance
+                </a>
+                <a th:href="@{/film/delete/{id}(id=${film.id})}" class="btn-cinema btn-cinema-danger"
+                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film ? Cette action supprimera également toutes les séances associées.');">
+                    <i class="fas fa-trash"></i> Supprimer le Film
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Films - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-film"></i> Gestion des Films</h1>
+                <p class="subtitle">Catalogue et gestion des films du cinéma</p>
+            </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <div class="stat-value" th:text="${filmCounts}">0</div>
+                <div class="stat-label">Total Films</div>
+            </div>
+            <div class="stat-card" th:if="${selectedGenre != null}">
+                <div class="stat-icon">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <div class="stat-value" th:text="${#lists.size(films)}">0</div>
+                <div class="stat-label">Films Filtrés</div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h3><i class="fas fa-search"></i> Filtres</h3>
+            <form class="filter-form" th:action="@{/film/genre}" method="get">
+                <div class="filter-group">
+                    <label for="genre">Genre</label>
+                    <select id="genre" name="genre" class="form-select">
+                        <option value="" disabled th:selected="${selectedGenre == null}">-- Tous les genres --</option>
+                        <option value="Action" th:selected="${selectedGenre == 'Action'}">Action</option>
+                        <option value="Comédie" th:selected="${selectedGenre == 'Comédie'}">Comédie</option>
+                        <option value="Drame" th:selected="${selectedGenre == 'Drame'}">Drame</option>
+                        <option value="Horreur" th:selected="${selectedGenre == 'Horreur'}">Horreur</option>
+                        <option value="Science-Fiction" th:selected="${selectedGenre == 'Science-Fiction'}">Science-Fiction</option>
+                        <option value="Thriller" th:selected="${selectedGenre == 'Thriller'}">Thriller</option>
+                        <option value="Romance" th:selected="${selectedGenre == 'Romance'}">Romance</option>
+                        <option value="Animation" th:selected="${selectedGenre == 'Animation'}">Animation</option>
+                        <option value="Documentaire" th:selected="${selectedGenre == 'Documentaire'}">Documentaire</option>
+                        <option value="Fantasy" th:selected="${selectedGenre == 'Fantasy'}">Fantasy</option>
+                        <option value="Aventure" th:selected="${selectedGenre == 'Aventure'}">Aventure</option>
+                        <option value="Mystère" th:selected="${selectedGenre == 'Mystère'}">Mystère</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button type="submit" class="btn-cinema btn-cinema-primary">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                </div>
+                <div class="filter-group" th:if="${selectedGenre != null}">
+                    <a th:href="@{/film/all}" class="btn-cinema btn-cinema-secondary">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a th:href="@{/film/new}" class="btn-cinema btn-cinema-success">
+                <i class="fas fa-plus"></i> Ajouter un Film
+            </a>
+            <a th:href="@{/dashboard}" class="btn-cinema btn-cinema-info">
+                <i class="fas fa-tachometer-alt"></i> Tableau de Bord
+            </a>
+        </div>
+
+        <!-- Films Table -->
+        <div class="table-container">
+            <table class="cinema-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> ID</th>
+                        <th><i class="fas fa-film"></i> Titre</th>
+                        <th><i class="fas fa-tags"></i> Genre</th>
+                        <th><i class="fas fa-clock"></i> Durée</th>
+                        <th><i class="fas fa-cogs"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="film : ${films}">
+                        <td th:text="${film.id}"></td>
+                        <td>
+                            <strong th:text="${film.titre}"></strong>
+                        </td>
+                        <td>
+                            <span class="status-badge status-badge-info" th:text="${film.genre}"></span>
+                        </td>
+                        <td th:text="${film.dureeMin} + ' min'"></td>
+                        <td>
+                            <div class="d-flex" style="gap: 0.5rem; flex-wrap: wrap;">
+                                <a class="btn-cinema btn-cinema-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                   th:href="@{/film/edit/{id}(id=${film.id})}">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <a class="btn-cinema btn-cinema-info" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                   th:href="@{/film/{id}(id=${film.id})}">
+                                    <i class="fas fa-eye"></i> Détails
+                                </a>
+                                <a class="btn-cinema btn-cinema-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                   th:href="@{/film/delete/{id}(id=${film.id})}"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce film ?');">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(films)}">
+                        <td colspan="5" class="empty-state">
+                            <i class="fas fa-film"></i>
+                            <h3>Aucun film trouvé</h3>
+                            <p th:if="${selectedGenre != null}">Aucun film trouvé pour le genre sélectionné.</p>
+                            <p th:if="${selectedGenre == null}">Aucun film dans le catalogue.</p>
+                            <a th:href="@{/film/new}" class="btn-cinema btn-cinema-success">
+                                <i class="fas fa-plus"></i> Ajouter le premier film
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Statistics Chart -->
+        <div class="form-container">
+            <h3><i class="fas fa-chart-bar"></i> Statistiques des Films par Genre</h3>
+            <div style="position: relative; height: 400px;">
+                <canvas id="genreChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart JS logic -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const rawJson = [[${filmByGenreJson}]];
+        const dataArray = JSON.parse(rawJson);
+
+        const labels = dataArray.map(item => item[0]);
+        const counts = dataArray.map(item => item[1]);
+
+        const ctx = document.getElementById('genreChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nombre de films par genre',
+                    data: counts,
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(155, 89, 182, 0.8)',
+                        'rgba(26, 188, 156, 0.8)',
+                        'rgba(52, 73, 94, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(231, 76, 60, 1)',
+                        'rgba(243, 156, 18, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(26, 188, 156, 1)',
+                        'rgba(52, 73, 94, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Répartition des films par genre',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+        /*]]>*/
+    </script>
+    </div>
+    </div>
+</body>
+</html>

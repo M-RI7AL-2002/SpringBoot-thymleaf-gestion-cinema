@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Séances - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-calendar-alt"></i> Gestion des Séances</h1>
+                <p class="subtitle">Programmation et gestion des séances de cinéma</p>
+            </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-value" th:text="${seanceCount}">0</div>
+                <div class="stat-label">Total Séances</div>
+            </div>
+            <div class="stat-card" th:if="${selectedSalle != null or selectedDate != null}">
+                <div class="stat-icon">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <div class="stat-value" th:text="${#lists.size(seances)}">0</div>
+                <div class="stat-label">Séances Filtrées</div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h3><i class="fas fa-search"></i> Filtres</h3>
+            <form class="filter-form" th:action="@{/seance/filter}" method="get">
+                <div class="filter-group">
+                    <label for="salle">Salle</label>
+                    <input type="text" id="salle" name="salle" class="form-control" 
+                           placeholder="Nom de la salle" th:value="${selectedSalle}">
+                </div>
+                <div class="filter-group">
+                    <label for="date">Date et Heure</label>
+                    <input type="datetime-local" id="date" name="date" class="form-control"
+                           th:value="${selectedDate}">
+                </div>
+                <div class="filter-group">
+                    <button type="submit" class="btn-cinema btn-cinema-primary">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                </div>
+                <div class="filter-group" th:if="${selectedSalle != null or selectedDate != null}">
+                    <a th:href="@{/seance/all}" class="btn-cinema btn-cinema-secondary">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a th:href="@{/seance/new}" class="btn-cinema btn-cinema-success">
+                <i class="fas fa-plus"></i> Ajouter une Séance
+            </a>
+            <a th:href="@{/dashboard}" class="btn-cinema btn-cinema-info">
+                <i class="fas fa-tachometer-alt"></i> Tableau de Bord
+            </a>
+        </div>
+
+        <!-- Séances Table -->
+        <div class="table-container">
+            <table class="cinema-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-hashtag"></i> ID</th>
+                        <th><i class="fas fa-calendar"></i> Date et Heure</th>
+                        <th><i class="fas fa-door-open"></i> Salle</th>
+                        <th><i class="fas fa-language"></i> Version</th>
+                        <th><i class="fas fa-film"></i> Film</th>
+                        <th><i class="fas fa-cogs"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${seances}">
+                        <td th:text="${s.id}"></td>
+                        <td>
+                            <strong th:text="${#temporals.format(s.dateHeure, 'dd/MM/yyyy')}"></strong><br>
+                            <small th:text="${#temporals.format(s.dateHeure, 'HH:mm')}"></small>
+                        </td>
+                        <td>
+                            <span class="status-badge status-badge-info" th:text="${s.salle}"></span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-badge-secondary" th:text="${s.version}"></span>
+                        </td>
+                        <td>
+                            <strong th:text="${s.film != null ? s.film.titre : '—'}"></strong>
+                            <div th:if="${s.film != null}" style="font-size: 0.8rem; color: var(--gray-600);">
+                                <span th:text="${s.film.genre}"></span> • 
+                                <span th:text="${s.film.dureeMin} + ' min'"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex" style="gap: 0.5rem; flex-wrap: wrap;">
+                                <a class="btn-cinema btn-cinema-primary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                   th:href="@{/seance/edit/{id}(id=${s.id})}">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <a class="btn-cinema btn-cinema-info" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                   th:href="@{/seance/{id}(id=${s.id})}">
+                                    <i class="fas fa-eye"></i> Détails
+                                </a>
+                                <a class="btn-cinema btn-cinema-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" 
+                                   th:href="@{/seance/delete/{id}(id=${s.id})}"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance ?');">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(seances)}">
+                        <td colspan="6" class="empty-state">
+                            <i class="fas fa-calendar-times"></i>
+                            <h3>Aucune séance trouvée</h3>
+                            <p th:if="${selectedSalle != null or selectedDate != null}">Aucune séance trouvée avec les critères sélectionnés.</p>
+                            <p th:if="${selectedSalle == null and selectedDate == null}">Aucune séance programmée.</p>
+                            <a th:href="@{/seance/new}" class="btn-cinema btn-cinema-success">
+                                <i class="fas fa-plus"></i> Programmer la première séance
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

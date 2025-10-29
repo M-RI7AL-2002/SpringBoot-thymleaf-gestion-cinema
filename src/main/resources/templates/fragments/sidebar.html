@@ -1,0 +1,105 @@
+<!-- Sidebar Fragment -->
+<div th:fragment="sidebar" class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3><i class="fas fa-film"></i> Cinéma</h3>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <nav class="sidebar-nav">
+        <ul>
+            <li>
+                <a th:href="@{/dashboard}" th:classappend="${activePage == 'dashboard'} ? 'active' : ''">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de Bord</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/film/all}" th:classappend="${activePage == 'film'} ? 'active' : ''">
+                    <i class="fas fa-film"></i>
+                    <span>Films</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/seance/all}" th:classappend="${activePage == 'seance'} ? 'active' : ''">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Séances</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/billet/all}" th:classappend="${activePage == 'billet'} ? 'active' : ''">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>Billets</span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/statistique}" th:classappend="${activePage == 'stats'} ? 'active' : ''">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistiques</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Mobile Menu Toggle -->
+<button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileSidebar()"></div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('sidebar-collapsed');
+
+        // Save state to localStorage
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    }
+
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        sidebar.classList.toggle('mobile-open');
+        overlay.classList.toggle('active');
+    }
+
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobileOverlay');
+
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+    }
+
+    // Initialize sidebar state from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('sidebar-collapsed');
+        }
+    });
+
+    // Close mobile sidebar when clicking on a link
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    closeMobileSidebar();
+                }
+            });
+        });
+    });
+</script>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Billet - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-eye"></i> Détails du Billet</h1>
+                <p class="subtitle">Informations complètes du billet</p>
+            </div>
+
+        <!-- Billet Details -->
+        <div class="form-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-ticket-alt"></i> Billet #<span th:text="${billet.id}">1</span></h3>
+                <div class="action-buttons">
+                    <a th:href="@{/billet/edit/{id}(id=${billet.id})}" class="btn-cinema btn-cinema-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a th:href="@{/billet/all}" class="btn-cinema btn-cinema-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+
+            <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Billet Information -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-info-circle"></i> Informations du Billet</h4>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-hashtag"></i> ID :</strong>
+                        <span th:text="${billet.id}">1</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-euro-sign"></i> Prix :</strong>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--success-color);" 
+                              th:text="${billet.prix} + '€'">15.00€</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-info-circle"></i> Statut :</strong>
+                        <span class="status-badge" 
+                              th:classappend="${billet.status == 'Vendu' ? 'status-badge-success' : 
+                                             billet.status == 'Réservé' ? 'status-badge-warning' : 
+                                             billet.status == 'Annulé' ? 'status-badge-danger' : 'status-badge-secondary'}"
+                              th:text="${billet.status}">Vendu</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-calendar"></i> Date d'achat :</strong>
+                        <span th:text="${billet.dateAchat != null ? #temporals.format(billet.dateAchat, 'dd/MM/yyyy') : 'Non spécifiée'}">01/01/2024</span>
+                    </div>
+                </div>
+
+                <!-- Séance Information -->
+                <div class="stat-card">
+                    <h4><i class="fas fa-film"></i> Informations de la Séance</h4>
+                    <div th:if="${billet.seance != null}">
+                        <div class="mb-3">
+                            <strong><i class="fas fa-film"></i> Film :</strong>
+                            <div th:if="${billet.seance.film != null}">
+                                <span th:text="${billet.seance.film.titre}">Titre du Film</span>
+                                <div style="font-size: 0.9rem; color: var(--gray-600);">
+                                    <span th:text="${billet.seance.film.genre}"></span> • 
+                                    <span th:text="${billet.seance.film.dureeMin} + ' min'"></span>
+                                </div>
+                            </div>
+                            <span th:if="${billet.seance.film == null}">Film non spécifié</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="fas fa-calendar"></i> Date et Heure :</strong>
+                            <span th:text="${#temporals.format(billet.seance.dateHeure, 'dd/MM/yyyy HH:mm')}">01/01/2024 20:00</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="fas fa-door-open"></i> Salle :</strong>
+                            <span class="status-badge status-badge-info" th:text="${billet.seance.salle}">Salle 1</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="fas fa-language"></i> Version :</strong>
+                            <span class="status-badge status-badge-secondary" th:text="${billet.seance.version}">VF</span>
+                        </div>
+                    </div>
+                    <div th:if="${billet.seance == null}" class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Aucune séance associée à ce billet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="action-buttons mt-4">
+                <a th:href="@{/billet/edit/{id}(id=${billet.id})}" class="btn-cinema btn-cinema-primary">
+                    <i class="fas fa-edit"></i> Modifier ce Billet
+                </a>
+                <a th:href="@{/seance/new}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-calendar-plus"></i> Programmer une Séance
+                </a>
+                <a th:href="@{/billet/delete/{id}(id=${billet.id})}" class="btn-cinema btn-cinema-danger"
+                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce billet ?');">
+                    <i class="fas fa-trash"></i> Supprimer le Billet
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

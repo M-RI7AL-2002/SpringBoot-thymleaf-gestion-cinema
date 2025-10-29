@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${billet.id != null ? 'Modifier le Billet' : 'Vendre un Billet'}">Billet</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1>
+                    <i class="fas fa-ticket-alt"></i>
+                    <span th:text="${billet.id != null ? 'Modifier le Billet' : 'Vendre un Billet'}">Billet</span>
+                </h1>
+                <!-- Safe subtitle -->
+                <p class="subtitle" th:text="${subtitle}">Gestion des billets</p>
+            </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form th:action="@{/billet/save}" th:object="${billet}" method="post" class="needs-validation" novalidate>
+            <!-- Hidden ID for edit -->
+            <input type="hidden" th:field="*{id}"/>
+
+            <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Prix -->
+                <div class="form-group">
+                    <label for="prix" class="form-label">
+                        <i class="fas fa-euro-sign"></i> Prix
+                    </label>
+                    <input type="number" th:field="*{prix}" class="form-control" id="prix"
+                           placeholder="Prix du billet" min="0" step="0.01" required>
+                    <div class="invalid-feedback">Veuillez entrer un prix valide.</div>
+                </div>
+
+                <!-- Statut -->
+                <div class="form-group">
+                    <label for="status" class="form-label">
+                        <i class="fas fa-info-circle"></i> Statut
+                    </label>
+                    <select id="status" th:field="*{status}" class="form-select" required>
+                        <option value="" disabled th:selected="${billet.status == null}">-- Sélectionnez un statut --</option>
+                        <option value="Vendu">Vendu</option>
+                        <option value="Réservé">Réservé</option>
+                        <option value="Annulé">Annulé</option>
+                        <option value="Remboursé">Remboursé</option>
+                    </select>
+                    <div class="invalid-feedback">Veuillez sélectionner un statut.</div>
+                </div>
+
+                <!-- Date d'achat -->
+                <div class="form-group">
+                    <label for="dateAchat" class="form-label">
+                        <i class="fas fa-calendar"></i> Date d'achat
+                    </label>
+                    <input type="date" th:field="*{dateAchat}" class="form-control" id="dateAchat">
+                    <div class="invalid-feedback">Veuillez entrer une date d'achat valide.</div>
+                </div>
+
+                <!-- Séance -->
+                <div class="form-group">
+                    <label for="seance" class="form-label">
+                        <i class="fas fa-film"></i> Séance
+                    </label>
+                    <select id="seance" name="seance" class="form-select" required>
+                        <option value="" disabled th:selected="${billet.seance == null}">-- Sélectionnez une séance --</option>
+                        <option th:each="s : ${seances}" th:value="${s.id}"
+                                th:text="${s.film != null ? s.film.titre + ' - ' + #temporals.format(s.dateHeure, 'dd/MM/yyyy HH:mm') + ' (' + s.salle + ', ' + s.version + ')' : 'Séance ' + s.id}"
+                                th:selected="${billet.seance != null and billet.seance.id == s.id}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">Veuillez sélectionner une séance.</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn-cinema btn-cinema-success"
+                        th:text="${billet.id != null ? 'Mettre à jour' : 'Enregistrer'}">
+                    Enregistrer
+                </button>
+                <a th:href="@{/billet/all}" class="btn-cinema btn-cinema-secondary">
+                    <i class="fas fa-arrow-left"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Bootstrap form validation
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })();
+
+    // Set default date to today if creating new billet
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('dateAchat');
+        if (dateInput && !dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+     });
+ </script>
+ </div>
+ </div>
+ </body>
+ </html>

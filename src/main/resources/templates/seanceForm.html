@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${seance.id != null ? 'Modifier la Séance' : 'Ajouter une Séance'}">Séance</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Header -->
+            <div class="cinema-header">
+                <h1>
+                    <i class="fas fa-calendar-alt"></i>
+                    <span th:text="${seance.id != null ? 'Modifier la Séance' : 'Ajouter une Séance'}">Séance</span>
+                </h1>
+                <!-- Safe subtitle -->
+                <p class="subtitle" th:text="${subtitle}">Gestion des séances</p>
+            </div>
+
+    <!-- Form -->
+    <div class="form-container">
+        <form th:action="@{/seance/save}" th:object="${seance}" method="post" class="needs-validation" novalidate>
+            <input type="hidden" th:field="*{id}"/>
+
+            <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <!-- Date et heure -->
+                <div class="form-group">
+                    <label for="dateHeure" class="form-label">
+                        <i class="fas fa-calendar"></i> Date et Heure
+                    </label>
+                    <input type="datetime-local" id="dateHeure" th:field="*{dateHeure}" class="form-control" required>
+                    <div class="invalid-feedback">Veuillez entrer la date et l'heure de la séance.</div>
+                </div>
+
+                <!-- Salle -->
+                <div class="form-group">
+                    <label for="salle" class="form-label">
+                        <i class="fas fa-door-open"></i> Salle
+                    </label>
+                    <select id="salle" th:field="*{salle}" class="form-select" required>
+                        <option value="" disabled th:selected="${seance.salle == null}">-- Sélectionnez une salle --</option>
+                        <option value="Salle 1">Salle 1</option>
+                        <option value="Salle 2">Salle 2</option>
+                        <option value="Salle 3">Salle 3</option>
+                        <option value="Salle 4">Salle 4</option>
+                        <option value="Salle 5">Salle 5</option>
+                        <option value="Salle VIP">Salle VIP</option>
+                        <option value="Salle IMAX">Salle IMAX</option>
+                    </select>
+                    <div class="invalid-feedback">Veuillez sélectionner une salle.</div>
+                </div>
+
+                <!-- Version -->
+                <div class="form-group">
+                    <label for="version" class="form-label">
+                        <i class="fas fa-language"></i> Version
+                    </label>
+                    <select id="version" th:field="*{version}" class="form-select" required>
+                        <option value="" disabled th:selected="${seance.version == null}">-- Sélectionnez la version --</option>
+                        <option value="VF">VF (Version Française)</option>
+                        <option value="VO">VO (Version Originale)</option>
+                        <option value="VOST">VOST (Version Originale Sous-titrée)</option>
+                        <option value="3D">3D</option>
+                        <option value="IMAX">IMAX</option>
+                        <option value="4DX">4DX</option>
+                    </select>
+                    <div class="invalid-feedback">Veuillez choisir une version.</div>
+                </div>
+
+                <!-- Film -->
+                <div class="form-group">
+                    <label for="film" class="form-label">
+                        <i class="fas fa-film"></i> Film
+                    </label>
+                    <select id="film" name="film" class="form-select" required>
+                        <option value="" disabled th:selected="${seance.film == null}">-- Sélectionnez un film --</option>
+                        <option th:each="f : ${films}" th:value="${f.id}"
+                                th:text="${f.titre + ' (' + f.genre + ', ' + f.dureeMin + ' min)'}"
+                                th:selected="${seance.film != null and seance.film.id == f.id}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">Veuillez sélectionner un film.</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn-cinema btn-cinema-success"
+                        th:text="${seance.id != null ? 'Mettre à jour' : 'Enregistrer'}">
+                    Enregistrer
+                </button>
+                <a th:href="@{/seance/all}" class="btn-cinema btn-cinema-secondary">
+                    <i class="fas fa-arrow-left"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Bootstrap form validation
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+     })();
+ </script>
+ </div>
+ </div>
+ </body>
+ </html>

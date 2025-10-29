@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Cinéma</title>
+    <link rel="stylesheet" href="/css/cinema-unified.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="cinema-container">
+            <!-- Page Header -->
+            <div class="cinema-header">
+                <h1><i class="fas fa-tachometer-alt"></i> Tableau de Bord</h1>
+                <p class="subtitle">Vue d'ensemble de votre cinéma</p>
+            </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-film"></i></div>
+            <div class="stat-value" th:text="${totalFilms != null ? totalFilms : 0}">0</div>
+            <div class="stat-label">Films en Catalogue</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div class="stat-value" th:text="${totalSeances != null ? totalSeances : 0}">0</div>
+            <div class="stat-label">Séances Programmées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+            <div class="stat-value" th:text="${totalBillets != null ? totalBillets : 0}">0</div>
+            <div class="stat-label">Billets Vendus</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-euro-sign"></i></div>
+            <div class="stat-value" th:text="${revenusTotal != null ? revenusTotal : '0.00'}">0.00</div>
+            <div class="stat-label">Revenus Total (€)</div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+        <div class="form-container">
+            <h3><i class="fas fa-chart-line"></i> Revenus des 7 Derniers Jours</h3>
+            <div style="position: relative; height: 300px;">
+                <canvas id="revenusChart"></canvas>
+            </div>
+        </div>
+        <div class="form-container">
+            <h3><i class="fas fa-chart-bar"></i> Top 5 Films</h3>
+            <div style="position: relative; height: 300px;">
+                <canvas id="topFilmsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="form-container">
+        <h3><i class="fas fa-bolt"></i> Actions Rapides</h3>
+        <p style="color: var(--gray-600); margin-bottom: 2rem;">Accédez rapidement aux fonctionnalités principales</p>
+
+        <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-plus-circle"></i></div>
+                <h5>Ajouter un Film</h5>
+                <p style="color: var(--gray-600); margin-bottom: 1rem;">Ajoutez un nouveau film à votre catalogue</p>
+                <a th:href="@{/film/new}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-film"></i> Gérer les Films
+                </a>
+            </div>
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-calendar-plus"></i></div>
+                <h5>Programmer une Séance</h5>
+                <p style="color: var(--gray-600); margin-bottom: 1rem;">Planifiez une nouvelle séance</p>
+                <a th:href="@{/seance/new}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-calendar-alt"></i> Gérer les Séances
+                </a>
+            </div>
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                <h5>Vendre un Billet</h5>
+                <p style="color: var(--gray-600); margin-bottom: 1rem;">Vendez des billets pour vos séances</p>
+                <a th:href="@{/billet/new}" class="btn-cinema btn-cinema-success">
+                    <i class="fas fa-ticket-alt"></i> Gérer les Billets
+                </a>
+            </div>
+            <div class="stat-card text-center">
+                <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
+                <h5>Voir les Statistiques</h5>
+                <p style="color: var(--gray-600); margin-bottom: 1rem;">Analysez les performances détaillées</p>
+                <a th:href="@{/film/all}" class="btn-cinema btn-cinema-info">
+                    <i class="fas fa-chart-bar"></i> Statistiques
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="form-container">
+        <h3><i class="fas fa-history"></i> Activité Récente</h3>
+        <p style="color: var(--gray-600); margin-bottom: 2rem;">Dernières actions effectuées</p>
+
+        <div class="row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+            <!-- Recent Seances -->
+            <div class="stat-card">
+                <h4><i class="fas fa-calendar-alt"></i> Dernières Séances</h4>
+                <div th:if="${recentSeances != null and !#lists.isEmpty(recentSeances)}">
+                    <div th:each="seance : ${recentSeances}" class="mb-3" style="padding: 1rem; background: var(--gray-100); border-radius: 0.5rem;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 style="margin-bottom: 0.5rem;" th:text="${seance.film != null ? seance.film.titre : 'Film'}">Titre du Film</h6>
+                                <p style="margin-bottom: 0.25rem; color: var(--gray-600);" th:text="${seance.salle}">Salle 1</p>
+                                <small style="color: var(--gray-500);" th:text="${seance.version}">VF</small>
+                            </div>
+                            <small style="color: var(--gray-500);" th:text="${#temporals.format(seance.dateHeure, 'dd/MM HH:mm')}">01/01 20:00</small>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${recentSeances == null or #lists.isEmpty(recentSeances)}" class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>Aucune séance récente.</p>
+                </div>
+            </div>
+
+            <!-- Recent Billets -->
+            <div class="stat-card">
+                <h4><i class="fas fa-ticket-alt"></i> Derniers Billets Vendus</h4>
+                <div th:if="${recentBillets != null and !#lists.isEmpty(recentBillets)}">
+                    <div th:each="billet : ${recentBillets}" class="mb-3" style="padding: 1rem; background: var(--gray-100); border-radius: 0.5rem;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 style="margin-bottom: 0.5rem;" th:text="${billet.seance != null && billet.seance.film != null ? billet.seance.film.titre : 'Film'}">Titre du Film</h6>
+                                <p style="margin-bottom: 0.25rem; color: var(--gray-600);" th:text="${billet.status}">Vendu</p>
+                                <small style="color: var(--gray-500);" th:text="${billet.dateAchat != null ? #temporals.format(billet.dateAchat, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</small>
+                            </div>
+                            <small style="color: var(--success-color); font-weight: bold;" th:text="${billet.prix} + '€'">15.00€</small>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${recentBillets == null or #lists.isEmpty(recentBillets)}" class="empty-state">
+                    <i class="fas fa-ticket-alt"></i>
+                    <p>Aucun billet vendu récemment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Scripts -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var revenusData = /*[[${revenusStats}]]*/ {};
+    var topFilmsData = /*[[${topFilmsStats}]]*/ {};
+
+    // Revenus Chart
+    const revenusCtx = document.getElementById('revenusChart').getContext('2d');
+    new Chart(revenusCtx, {
+        type: 'line',
+        data: {
+            labels: Object.keys(revenusData),
+            datasets: [{
+                label: 'Revenus (€)',
+                data: Object.values(revenusData),
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#3498db',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'top' } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } },
+                x: { grid: { display: false } }
+            },
+            animation: { duration: 2000, easing: 'easeInOutQuart' }
+        }
+    });
+
+    // Top Films Chart
+    const topFilmsCtx = document.getElementById('topFilmsChart').getContext('2d');
+    new Chart(topFilmsCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(topFilmsData),
+            datasets: [{
+                label: 'Nombre de Billets Vendus',
+                data: Object.values(topFilmsData),
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(46, 204, 113, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(243, 156, 18, 0.8)',
+                    'rgba(155, 89, 182, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(46, 204, 113, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(243, 156, 18, 1)',
+                    'rgba(155, 89, 182, 1)'
+                ],
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, position: 'top' } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.1)' } },
+                x: { grid: { display: false } }
+            },
+            animation: { duration: 2000, easing: 'easeInOutQuart' }
+        }
+     });
+     /*]]>*/
+ </script>
+ </div>
+ </div>
+ </body>
+ </html>
