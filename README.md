@@ -88,3 +88,6 @@ INSERT INTO film (titre, genre, duree) VALUES ('Inception', 'Science-fiction', 1
 INSERT INTO seance (film_id, date, heure, salle, places_disponibles) VALUES (1, '2025-10-30', '20:00', 'Salle 1', 100);
 INSERT INTO billet (seance_id, prix, statut) VALUES (1, 50, 'confirmé');
 
+# 7. Auteurs / Encadrement
+- RIHAL Mohamed.
+- Pr LACHGAR Mohamed / Programmation web avance / ecole normale superieur marrakech.
